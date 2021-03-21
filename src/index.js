@@ -94,7 +94,7 @@ const headerParameter = (values) => (headers, parameter) => {
     .expand(values);
   headers.set(name, expansion);
   return headers;
-});
+};
 
 const satisfiesSecurityScheme = (securitySchemes, credentials) => (name) => {
   const scheme = securitySchemes[name];
