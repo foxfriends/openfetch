@@ -130,7 +130,7 @@ const invoker = (context) => (method, operation) => {
 
   const allParameters = [...context.parameters, ...parameters];
 
-  const invoke = (params, options) => async (env) => {
+  const invoke = (params, options = {}) => async (env) => {
     if (context.log) {
       if (deprecated) {
         context.log.warn(`Invoking deprecated operation ${operationId}`);
@@ -254,7 +254,7 @@ const invoker = (context) => (method, operation) => {
       }
     }
 
-    return context.fetch(url, {
+    return (env.fetch || context.fetch)(url, {
       ...options,
       method: method.toUpperCase(),
       headers,
