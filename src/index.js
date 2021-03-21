@@ -1,4 +1,5 @@
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import semver from 'semver';
 import { always, apply, cond, curry, equals, identity, mergeRight, propEq, T } from 'ramda';
 import { Resolver } from '@stoplight/json-ref-resolver';
@@ -290,11 +291,14 @@ export const create = (spec, { url, logging, fetch: fetch_ = fetch, console: con
 
   const warn = (message) => console_.warn(`OpenAPI (${info.title}@${info.version}): ${message}`);
 
+  const ajv = new Ajv;
+  addFormats(ajv);
+
   const context = {
     url,
     securitySchemes,
     security,
-    ajv: new Ajv,
+    ajv,
     fetch: fetch_,
     log: logging ? { warn } : null,
   };
