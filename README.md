@@ -1,5 +1,7 @@
 # OpenFetch
 
+[![ci](https://github.com/foxfriends/openfetch/actions/workflows/ci.yaml/badge.svg)](https://github.com/foxfriends/openfetch/actions/workflows/ci.yaml)
+
 Fetch-like OpenAPI client library. Supports [OpenAPI 3](https://swagger.io/specification/) only.
 
 ## Usage
