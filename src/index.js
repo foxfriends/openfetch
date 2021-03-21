@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 import semver from 'semver';
 import { always, apply, cond, curry, equals, identity, mergeRight, propEq, T } from 'ramda';
-import { parse as resolve } from 'jsonref';
+import { Resolver } from '@stoplight/json-ref-resolver';
 import template from 'uritemplate';
 import qs from 'qs';
 
@@ -306,10 +306,13 @@ export const create = (spec, { url, logging, fetch = fetch, console = console } 
 
 export const resolveAndCreate = async (doc, opts = {}) => {
   const { fetch: fetch_ = fetch, url: scope } = opts;
-  return resolve(doc, {
-    scope,
-    retriever: (url) => fetch_(url).then(_ => _.json())
-  })
+  const resolver = new Resolver({
+    resolvers: {
+      https: { resolve: async (url) => fetch_(new URL(url, scope)), },
+      http: { resolve: async (url) => fetch_(new URL(url, scope)), },
+    },
+  });
+  return resolver.resolve(doc)
     .then(_ => create(_, opts));
 };
 
