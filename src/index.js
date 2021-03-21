@@ -160,7 +160,7 @@ const invoker = (context) => (method, operation) => {
     const path = allParameters
       .filter(propEq('in', 'path'))
       .reduce(pathParameter(params), context.path);
-    const url = new URL(path, context.url);
+    const url = new URL(path, env.url || context.url);
     url.search = allParameters
       .filter(propEq('in', 'query'))
       .flatMap(queryParameter(params))
