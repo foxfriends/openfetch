@@ -272,7 +272,7 @@ const invokers = (context) => (path, pathItem) => {
     .map(apply(invoker({ ...context, path, parameters })));
 };
 
-export const create = (spec, { url, logging, fetch: fetch_ = fetch, console = console } = {}) => {
+export const create = (spec, { url, logging, fetch: fetch_ = fetch, console: console_ = console } = {}) => {
   if (!spec?.openapi) {
     throw new TypeError('Invalid OpenAPI spec object');
   }
@@ -288,7 +288,7 @@ export const create = (spec, { url, logging, fetch: fetch_ = fetch, console = co
     throw new TypeError(`Unsupported openapi version ${openapi}`);
   }
 
-  const warn = (message) => console.warn(`OpenAPI (${info.title}@${info.version}): ${message}`);
+  const warn = (message) => console_.warn(`OpenAPI (${info.title}@${info.version}): ${message}`);
 
   const context = {
     url,
