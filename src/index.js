@@ -147,7 +147,7 @@ const invoker = (context) => (method, operation) => {
         const schema = parameter.content
           ? Object.values(parameter.content)[0].schema
           : parameter.schema;
-        if (schema && !Ajv.validate(parameter.schema, params[name])) {
+        if (schema && !context.ajv.validate(parameter.schema, params[name])) {
           context.log.warn(`Value provided for ${name} to ${operationId} does not satisfy the expected schema`);
         }
       }
@@ -199,7 +199,7 @@ const invoker = (context) => (method, operation) => {
 
       const { schema } = content[contentType];
       if (contentType === 'application/json') {
-        if (context.log && !Ajv.validate(schema, body)) {
+        if (context.log && !context.ajv.validate(schema, body)) {
           context.log.warn(`Provided JSON request body does not match schema for ${operationId}`);
         }
         body = JSON.stringify(body);
@@ -294,6 +294,7 @@ export const create = (spec, { url, logging, fetch: fetch_ = fetch, console: con
     url,
     securitySchemes,
     security,
+    ajv: new Ajv,
     fetch: fetch_,
     log: logging ? { warn } : null,
   };

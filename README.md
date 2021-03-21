@@ -5,17 +5,17 @@ Fetch-like OpenAPI client library.
 Usage:
 
 ```js
-import { client, hosted, external, create } from 'openfetch';
+import * as openfetch from 'openfetch';
 
 // Build an API based on the spec
-const api = create(SPEC, { url: 'http://example.com' });
+const api = openfetch.create(SPEC, { url: 'http://example.com' });
 
 // If your spec contains references (internal or external), they must be resolved.
 // This is probably the situation for most specs.
-const api = await resolveAndCreate(SPEC, { url: 'http://example.com' });
+const api = await openfetch.resolveAndCreate(SPEC, { url: 'http://example.com' });
 
 // If your spec is hosted, it can be retrieved automatically.
-const api = await hosted(SPEC, { url: 'http://example.com' });
+const api = await openfetch.hosted(SPEC, { url: 'http://example.com' });
 
 // Create an invocation context with credentials and such. The keys of the credentials
 // object are names of security schemes, and the values are their values...
@@ -23,7 +23,7 @@ const api = await hosted(SPEC, { url: 'http://example.com' });
 // *   HTTP Bearer Auth expects the value to be just the token (i.e. not including the "Bearer" prefix)
 // *   Other HTTP auth expects the full header value (i.e. including the scheme name)
 // *   OAuth2 will pass the token via Autorization header
-const invoke = client({ credentials: {} });
+const invoke = openfetch.client({ credentials: {} });
 
 // Invoke an operation by `operationId`:
 // *   Parameter are supplied by name
