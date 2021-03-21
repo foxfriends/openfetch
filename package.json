@@ -1,0 +1,20 @@
+{
+  "name": "openfetch",
+  "version": "1.0.0",
+  "description": "Fetch-like OpenAPI 3 client for JS",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha "
+  },
+  "repository": "https://github.com/foxfriends/openfetch",
+  "author": "Cameron Eldridge <cam.eldridge@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^7.2.3",
+    "jsonref": "^6.0.0",
+    "qs": "^6.10.0",
+    "ramda": "^0.27.1",
+    "semver": "^7.3.4",
+    "uritemplate": "^0.3.4"
+  }
+}
