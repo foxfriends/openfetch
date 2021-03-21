@@ -1,5 +1,5 @@
 import semver from 'semver';
-import { always, apply, cond, equals, identity, juxt, mergeRight, nth, o, propEq, T } from 'ramda';
+import { always, apply, cond, curry, equals, identity, mergeRight, propEq, T } from 'ramda';
 import { parse as resolve } from 'jsonref';
 import template from 'uritemplate';
 import qs from 'qs';
