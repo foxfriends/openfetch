@@ -272,7 +272,7 @@ const invokers = (context) => (path, pathItem) => {
     .map(apply(invoker({ ...context, path, parameters })));
 };
 
-export const create = (spec, { url, logging, fetch = fetch, console = console } = {}) => {
+export const create = (spec, { url, logging, fetch: fetch_ = fetch, console = console } = {}) => {
   if (!spec?.openapi) {
     throw new TypeError('Invalid OpenAPI spec object');
   }
@@ -294,7 +294,7 @@ export const create = (spec, { url, logging, fetch = fetch, console = console } 
     url,
     securitySchemes,
     security,
-    fetch,
+    fetch: fetch_,
     log: logging ? { warn } : null,
   };
 
