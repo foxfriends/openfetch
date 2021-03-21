@@ -313,6 +313,7 @@ export const resolveAndCreate = async (doc, opts = {}) => {
     },
   });
   return resolver.resolve(doc)
+    .then(_ => _.result)
     .then(_ => create(_, opts));
 };
 
