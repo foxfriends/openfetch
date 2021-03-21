@@ -305,8 +305,11 @@ export const create = (spec, { url, logging, fetch = fetch, console = console } 
 };
 
 export const resolveAndCreate = async (doc, opts = {}) => {
-  const { fetch: fetch_ = fetch } = opts;
-  return resolve(doc, { retriever: (url) => fetch_(url).then(_ => _.json()) })
+  const { fetch: fetch_ = fetch, url: scope } = opts;
+  return resolve(doc, {
+    scope,
+    retriever: (url) => fetch_(url).then(_ => _.json())
+  })
     .then(_ => create(_, opts));
 };
 
