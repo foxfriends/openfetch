@@ -305,14 +305,14 @@ export const create = (spec, { url, logging, fetch = fetch, console = console } 
 };
 
 export const resolveAndCreate = async (doc, opts = {}) => {
-  const { fetch = fetch } = opts;
-  return resolve(doc, { retriever: (url) => fetch(url).then(_ => _.json()) })
+  const { fetch: fetch_ = fetch } = opts;
+  return resolve(doc, { retriever: (url) => fetch_(url).then(_ => _.json()) })
     .then(_ => create(_, opts));
 };
 
 export const hosted = async (url, opts = {}) => {
-  const { fetch = fetch } = opts;
-  return fetch(url)
+  const { fetch: fetch_ = fetch } = opts;
+  return fetch_(url)
     .then(_ => _.json())
     .then(_ => resolveAndCreate(_, { url, ...opts }));
 };
