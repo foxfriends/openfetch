@@ -317,4 +317,4 @@ export const hosted = async (url, opts = {}) => {
     .then(_ => resolveAndCreate(_, { url, ...opts }));
 };
 
-export const fetch = curry((env, invocation) => invocation(env));
+export const client = curry((env, invocation) => invocation(env));
