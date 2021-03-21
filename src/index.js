@@ -1,3 +1,4 @@
+import Ajv from 'ajv';
 import semver from 'semver';
 import { always, apply, cond, curry, equals, identity, mergeRight, propEq, T } from 'ramda';
 import { parse as resolve } from 'jsonref';
@@ -11,7 +12,6 @@ const METHODS = new Set(['get', 'put', 'post', 'delete', 'options', 'head', 'pat
 const IGNORED_HEADERS = new Set(['accept', 'content-type', 'authorization']);
 // Technically OpenAPI does not want us to put body on delete, but we'll allow it anyway...
 const CAN_HAVE_BODY = new Set(['put', 'post', 'delete', 'patch']);
-const FORM_TYPES = new Set(['application/x-www-form-urlencoded', 'multipart/form-data']);
 
 const pathParameter = (values) => (path, parameter) => {
   const {
@@ -90,7 +90,7 @@ const headerParameter = (values) => (headers, parameter) => {
   const { name, explode = false } = parameter;
   const suffix = explode ? '*' : '';
   const expansion = template
-    .parse(`{${name}*}`)
+    .parse(`{${name}${suffix}}`)
     .expand(values);
   headers.set(name, expansion);
   return headers;
@@ -112,6 +112,7 @@ const satisfiesSecurityScheme = (securitySchemes, credentials) => (name) => {
     case 'apiKey':
       // cannot reliably check cookies because they should have been set HTTP Only
       if (scheme.in === 'cookie') { return true; }
+      /* fallsthrough */
     case 'oauth2':
     case 'openIdConnect':
       return name in credentials;
@@ -124,7 +125,6 @@ const invoker = (context) => (method, operation) => {
     parameters = [],
     requestBody,
     security = context.security,
-    responses,
     deprecated = false,
   } = operation;
 
@@ -165,7 +165,6 @@ const invoker = (context) => (method, operation) => {
       .flatMap(queryParameter(params))
       .join('&');
 
-    const setHeader = (headers, { name }) => (headers.set(name, params[name]), headers);
     const headers = allParameters
       .filter(propEq('in', 'header'))
       .filter(_ => !IGNORED_HEADERS.has(_.name.toLowerCase()))
@@ -218,7 +217,7 @@ const invoker = (context) => (method, operation) => {
           for (const schemeName of Object.keys(requirement)) {
             const scheme = securitySchemes[schemeName];
             switch (scheme.type) {
-              case 'apiKey':
+              case 'apiKey': {
                 const { name } = scheme;
                 switch (scheme.in) {
                   case 'cookie': continue;
@@ -226,6 +225,7 @@ const invoker = (context) => (method, operation) => {
                   case 'query': url.searchParams.append(name, credentials[schemeName]); break;
                 }
                 break;
+              }
               case 'http':
                 switch (scheme.scheme.toLowerCase()) {
                   case 'bearer': headers.set('Authorization', `Bearer ${credentials[schemeName]}`); break;
@@ -292,7 +292,6 @@ export const create = (spec, { url, logging, fetch = fetch, console = console } 
 
   const context = {
     url,
-    components,
     securitySchemes,
     security,
     fetch,
@@ -305,10 +304,10 @@ export const create = (spec, { url, logging, fetch = fetch, console = console } 
     .reduce(mergeRight, {});
 };
 
-export const resolveAndCreate = async (document, opts = {}) => {
+export const resolveAndCreate = async (doc, opts = {}) => {
   const { fetch = fetch } = opts;
   return resolve(doc, { retriever: (url) => fetch(url).then(_ => _.json()) })
-    .then(_ => create(_, { url, ...opts }));
+    .then(_ => create(_, opts));
 };
 
 export const hosted = async (url, opts = {}) => {

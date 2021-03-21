@@ -1,0 +1,25 @@
+name: ci
+on:
+  - push
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Node.js
+        uses: actions/setup-node@v1
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        env:
+          cache-name: node_modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os}}-build-${{ env.cache-name }}-${ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - run: |
+          npm ci
+          npm run lint
