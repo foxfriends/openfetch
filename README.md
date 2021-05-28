@@ -4,6 +4,8 @@
 
 Fetch-like OpenAPI client library. Supports [OpenAPI 3](https://swagger.io/specification/) only.
 
+Install from NPM: `npm install openfetch`
+
 ## Usage
 
 ```js
