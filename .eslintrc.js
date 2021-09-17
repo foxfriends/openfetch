@@ -13,5 +13,6 @@ module.exports = {
     browser: true,
   },
   plugins: ['ramda'],
+  globals: { globalThis: false },
   rules: {},
 };

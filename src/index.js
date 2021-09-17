@@ -7,7 +7,9 @@ import template from 'uritemplate';
 import qs from 'qs';
 
 // This is probably not the best way to check for this?
-const encodeBase64 = btoa ? btoa : (Buffer ? (d) => Buffer.from(d).toString('base64') : identity);
+const encodeBase64 = globalThis.btoa
+  ? globalThis.btoa
+  : (globalThis.Buffer ? (d) => globalThis.Buffer.from(d).toString('base64') : identity);
 
 const METHODS = new Set(['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace']);
 const IGNORED_HEADERS = new Set(['accept', 'content-type', 'authorization']);
