@@ -31,7 +31,7 @@ const IGNORED_HEADERS = new Set(['accept', 'content-type', 'authorization']);
 // Technically OpenAPI does not want us to put body on delete, but we'll allow it anyway...
 const CAN_HAVE_BODY = new Set(['put', 'post', 'delete', 'patch']);
 
-const memoize = (fn, map = new WeakMap) => (arg) => {
+const memoize = (fn, map = new Map) => (arg) => {
   if (map.has(arg)) { return map.get(arg); }
   const value = fn(arg);
   map.set(arg, value);
