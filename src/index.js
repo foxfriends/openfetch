@@ -1,8 +1,22 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import semver from 'semver';
-import { always, apply, cond, curry, equals, identity, mergeRight, propEq, T } from 'ramda';
-import { Resolver } from '@stoplight/json-ref-resolver';
+import {
+  always,
+  apply,
+  complement,
+  cond,
+  curry,
+  equals,
+  has,
+  is,
+  identity,
+  map,
+  mergeRight,
+  propEq,
+  T,
+} from 'ramda';
+import RefParser from '@apidevtools/json-schema-ref-parser';
 import template from 'uritemplate';
 import qs from 'qs';
 
@@ -15,6 +29,13 @@ const METHODS = new Set(['get', 'put', 'post', 'delete', 'options', 'head', 'pat
 const IGNORED_HEADERS = new Set(['accept', 'content-type', 'authorization']);
 // Technically OpenAPI does not want us to put body on delete, but we'll allow it anyway...
 const CAN_HAVE_BODY = new Set(['put', 'post', 'delete', 'patch']);
+
+const memoize = (fn, map = new WeakMap) => (arg) => {
+  if (map.has(arg)) { return map.get(arg); }
+  const value = fn(arg);
+  map.set(arg, value);
+  return value;
+};
 
 const pathParameter = (values) => (path, parameter) => {
   const {
@@ -126,14 +147,16 @@ const invoker = (context) => (method, operation) => {
   const {
     operationId,
     parameters = [],
-    requestBody,
+    requestBody: unresolvedRequestBody,
     security = context.security,
     deprecated = false,
   } = operation;
 
-  const allParameters = [...context.parameters, ...parameters];
+  const unresolvedParameters = [...context.parameters, ...parameters];
 
   const invoke = (params, options = {}) => async (env) => {
+    const allParameters = await context.dereference(unresolvedParameters);
+    const requestBody = await context.dereference(unresolvedRequestBody);
     if (context.log) {
       if (deprecated) {
         context.log.warn(`Invoking deprecated operation ${operationId}`);
@@ -147,10 +170,10 @@ const invoker = (context) => (method, operation) => {
           context.log.warn(`Missing required parameter ${name} to ${operationId}`)
           continue;
         }
-        const schema = parameter.content
+        const schema = await context.dereference(parameter.content
           ? Object.values(parameter.content)[0].schema
-          : parameter.schema;
-        if (schema && !context.ajv.validate(parameter.schema, params[name])) {
+          : parameter.schema);
+        if (schema && !context.ajv.validate(schema, params[name])) {
           context.log.warn(`Value provided for ${name} to ${operationId} does not satisfy the expected schema`);
         }
       }
@@ -176,32 +199,30 @@ const invoker = (context) => (method, operation) => {
     let body = options.body;
     checkBody: if (CAN_HAVE_BODY.has(method) && requestBody) {
       const { content, required } = requestBody;
-      const {
-        contentType = Object.keys(content).length === 1
-          ? Object.keys(content)[0]
-          : undefined,
-      } = options;
-      if (context.log) {
-        if (required && !options.body) {
+      if (required && !options.body) {
+        if (context.log) {
           context.log.warn(`Missing required request body for ${operationId}`);
-          break checkBody;
         }
-        if (!contentType) {
+        break checkBody;
+      }
+      let contentType = headers.get('Content-Type');
+      if (!contentType && Object.keys(content).length === 1) {
+        contentType = Object.keys(content)[0];
+      }
+      if (!contentType) {
+        if (context.log) {
           context.log.warn(`Could not determine Content-Type for ${operationId}`);
-          break checkBody;
         }
+        break checkBody;
       }
-
       headers.set('Content-Type', contentType);
-      if (context.log) {
-        if (!(contentType in content) && context.log) {
+      if (!(contentType in content)) {
+        if (context.log) {
           context.log.warn(`Unsupported Content-Type ${contentType} for ${operationId}`);
-          break checkBody;
         }
       }
-
-      const { schema } = content[contentType];
       if (contentType === 'application/json') {
+        const { schema } = content[contentType];
         if (context.log && !context.ajv.validate(schema, body)) {
           context.log.warn(`Provided JSON request body does not match schema for ${operationId}`);
         }
@@ -210,7 +231,7 @@ const invoker = (context) => (method, operation) => {
     }
 
     checkSecurity: if (security.length) {
-      const { securitySchemes } = context;
+      const securitySchemes = await context.dereference(context.securitySchemes);
       const { credentials = {} } = env;
       for (const requirement of security) {
         const allSatisfied = Object
@@ -296,7 +317,21 @@ export const create = (spec, { url, logging, fetch: fetch_ = fetch, console: con
   const ajv = new Ajv;
   addFormats(ajv);
 
+  const $refs = RefParser.resolve(spec);
+  const dereference = memoize(cond([
+    [complement(is(Object)), identity],
+    [Array.isArray, pipe(map(dereference), (promises) => Promise.all(promises))],
+    [has('$ref'), ({ $ref }) => $refs.then((refs) => dereference(refs.get($ref)))],
+    [T, async (object) => {
+      const entries = Object
+        .entries(object)
+        .map(async ([key, value]) => [key, await dereference(value)])
+      return Object.fromEntries(await Promise.all(entries));
+    }],
+  ]));
+
   const context = {
+    dereference,
     url,
     securitySchemes,
     security,
@@ -311,24 +346,11 @@ export const create = (spec, { url, logging, fetch: fetch_ = fetch, console: con
     .reduce(mergeRight, {});
 };
 
-export const resolveAndCreate = async (doc, opts = {}) => {
-  const { fetch: fetch_ = fetch, url: scope } = opts;
-  const resolver = new Resolver({
-    resolvers: {
-      https: { resolve: async (url) => fetch_(new URL(url, scope)), },
-      http: { resolve: async (url) => fetch_(new URL(url, scope)), },
-    },
-  });
-  return resolver.resolve(doc)
-    .then(_ => _.result)
-    .then(_ => create(_, opts));
-};
-
 export const hosted = async (url, opts = {}) => {
   const { fetch: fetch_ = fetch } = opts;
   return fetch_(url)
     .then(_ => _.json())
-    .then(_ => resolveAndCreate(_, { url, ...opts }));
+    .then(_ => create(_, { url, ...opts }));
 };
 
 export const client = curry((env, invocation) => invocation(env));

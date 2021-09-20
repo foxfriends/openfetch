@@ -10,7 +10,7 @@
   "author": "Cameron Eldridge <cam.eldridge@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@stoplight/json-ref-resolver": "^3.1.2",
+    "@apidevtools/json-schema-ref-parser": "^9.0.9",
     "ajv": "^7.2.3",
     "ajv-formats": "^1.5.1",
     "qs": "^6.10.0",

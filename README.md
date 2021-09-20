@@ -11,8 +11,7 @@ Install from NPM: `npm install openfetch`
 ```js
 import * as openfetch from 'openfetch';
 
-// Build an API based on the spec. You probably won't use this method directly, but the options
-// are the same for the other methods. Shown below are the defaults:
+// Build an API based on the spec. Shown below are the default options:
 const api = openfetch.create(SPEC, {
   // The base URL from which to make requests.
   url,
@@ -24,20 +23,9 @@ const api = openfetch.create(SPEC, {
   fetch: window.fetch,
 });
 
-// If your spec contains references (internal or external), they must be resolved.
-// This is probably the situation for most specs.
-const api = await openfetch.resolveAndCreate(SPEC, {
-  // The URL where the spec is hosted, from which to resolve relative references.
-  url,
-  // The fetch implementation to use to make requests to resolve references.
-  fetch: window.fetch,
-  // ... also accepts the same opts as above
-});
-
-// If your spec is hosted, it can be retrieved automatically. In this case, the `url`
-// passed here will automatically be set as the base URL for resolving references.
+// If your spec is hosted, it can be retrieved automatically.
 const api = await openfetch.hosted('http://example.com', {
- // ... same opts as above
+  // ... same opts as above
 });
 
 // Create an invocation context with credentials and such. The keys of the credentials
