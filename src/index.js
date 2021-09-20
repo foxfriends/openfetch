@@ -13,6 +13,7 @@ import {
   identity,
   map,
   mergeRight,
+  pipe,
   propEq,
   T,
 } from 'ramda';
