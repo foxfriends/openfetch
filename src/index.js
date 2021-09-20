@@ -321,7 +321,7 @@ export const create = (spec, { url, logging, fetch: fetch_ = fetch, console: con
   const $refs = RefParser.resolve(spec);
   const dereference = memoize(cond([
     [complement(is(Object)), identity],
-    [Array.isArray, pipe(map(dereference), (promises) => Promise.all(promises))],
+    [Array.isArray, pipe(map((value) => dereference(value)), (promises) => Promise.all(promises))],
     [has('$ref'), ({ $ref }) => $refs.then((refs) => dereference(refs.get($ref)))],
     [T, async (object) => {
       const entries = Object
