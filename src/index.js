@@ -186,7 +186,7 @@ const invoker = (context) => (method, operation) => {
     const path = allParameters
       .filter(propEq('in', 'path'))
       .reduce(pathParameter(params), context.path);
-    const url = new URL(path, env.url || context.url);
+    const url = (env.url || context.url) + path; // OpenAPI specifies that these should be appended
     url.search = allParameters
       .filter(propEq('in', 'query'))
       .flatMap(queryParameter(params))
