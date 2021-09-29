@@ -53,7 +53,7 @@ const pathParameter = (values) => (path, parameter) => {
   const expansion = template
     .parse(`{${prefix}${name}${suffix}}`)
     .expand(values);
-  return path.replaceAll(`{${name}}`, expansion);
+  return path.replace(new RegExp(`{${name}}`, 'g'), expansion);
 };
 
 const queryParameter = (values) => (parameter) => {
