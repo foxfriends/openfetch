@@ -2,9 +2,11 @@
   "name": "openfetch",
   "version": "0.1.1",
   "description": "Fetch-like OpenAPI 3 client for JS",
-  "module": "src/index.js",
+  "module": "commonjs/index.js",
   "scripts": {
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "prepare": "npm run build",
+    "build": "babel src --out-dir commonjs"
   },
   "repository": "https://github.com/foxfriends/openfetch",
   "author": "Cameron Eldridge <cam.eldridge@gmail.com>",
@@ -19,6 +21,9 @@
     "uritemplate": "^0.3.4"
   },
   "devDependencies": {
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.5",
+    "@babel/plugin-transform-modules-commonjs": "^7.15.4",
     "eslint": "^7.22.0",
     "eslint-plugin-ramda": "^2.5.1"
   }
