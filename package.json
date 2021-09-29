@@ -1,6 +1,6 @@
 {
   "name": "openfetch",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Fetch-like OpenAPI 3 client for JS",
   "module": "./src/index.js",
   "browser": "./src/index.js",
