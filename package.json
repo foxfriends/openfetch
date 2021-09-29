@@ -2,7 +2,9 @@
   "name": "openfetch",
   "version": "0.1.1",
   "description": "Fetch-like OpenAPI 3 client for JS",
-  "module": "commonjs/index.js",
+  "module": "./src/index.js",
+  "browser": "./src/index.js",
+  "main": "./commonjs/index.js",
   "scripts": {
     "lint": "eslint src",
     "prepare": "npm run build",
@@ -26,5 +28,6 @@
     "@babel/plugin-transform-modules-commonjs": "^7.15.4",
     "eslint": "^7.22.0",
     "eslint-plugin-ramda": "^2.5.1"
-  }
+  },
+  "files": ["src", "commonjs"]
 }
